@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Store Administration - Small Shop</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+<style>
+    /* General body styling */
+    body { font-family: 'Roboto', sans-serif; background: #f0f2f5; margin:0; padding:20px;}
+    h1 { text-align:center; color:#2c3e50; margin-bottom:30px; }
+
+    /* Container for content */
+    .container { max-width:1000px; margin:auto; }
+
+    /* Form styling */
+    form {
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-bottom:20px;
+        align-items:flex-end;
+    }
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="file"] { padding:8px; border-radius:4px; border:1px solid #ccc; flex:1; }
+    form button {
+        padding:8px 12px;
+        border:none;
+        border-radius:4px;
+        background:#3498db;
+        color:#fff;
+        cursor:pointer;
+    }
+    form button:hover { background:#2980b9; }
+
+    /* Product grid styling */
+    #product-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap:15px; }
+
+    /* Individual product card */
+    .product-card {
+        background:#fff;
+        padding:10px;
+        border-radius:8px;
+        box-shadow:0 0 8px rgba(0,0,0,0.1);
+        text-align:center;
+    }
+    .product-card img {
+        width:100%;
+        height:120px;
+        object-fit:cover;
+        border-radius:4px;
+        margin-bottom:5px;
+    }
+    .product-card h3 { margin:5px 0; font-size:16px; color:#2c3e50; }
+    .product-card p { margin:2px 0; font-size:14px; color:#34495e; }
+
+    /* Buttons inside product cards */
+    .action-btn {
+        padding:4px 8px;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        color:white;
+        margin:2px;
+    }
+    .edit-btn { background:#f39c12; }
+    .delete-btn { background:#e74c3c; }
+    .edit-btn:hover { background:#d35400; }
+    .delete-btn:hover { background:#c0392b; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Small Shop Store Administration</h1>
+
+    <!-- ===== Add/Edit Product Form ===== -->
+    <form id="product-form">
+        <input type="hidden" id="edit-index">
+        <input type="text" id="name" placeholder="Product Name" required>
+        <input type="number" id="quantity" placeholder="Quantity" required>
+        <input type="number" id="price" placeholder="Price" required step="0.01">
+        <input type="file" id="image" accept="image/*">
+        <button type="submit" id="submit-btn">Add</button>
+        <button type="button" id="cancel-edit" style="display:none; background:#7f8c8d;">Cancel</button>
+    </form>
+
+    <!-- ===== Product Grid ===== -->
+    <div id="product-grid"></div>
+</div>
+
+<script>
+/* ===== Local Storage for Products ===== */
+let products = JSON.parse(localStorage.getItem('products') || '[]');
+
+/* ===== Render Products on Page ===== */
+function renderProducts() {
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = '';
+    products.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <img src="${p.image || ''}" alt="Product Image">
+            <h3>${p.name}</h3>
+            <p>Qty: ${p.quantity}</p>
+            <p>$${Number(p.price).toFixed(2)}</p>
+            <button class="action-btn edit-btn" onclick="editProduct(${i})">Edit</button>
+            <button class="action-btn delete-btn" onclick="deleteProduct(${i})">Delete</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+/* ===== Add or Update Product ===== */
+document.getElementById('product-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const quantity = Number(document.getElementById('quantity').value);
+    const price = Number(document.getElementById('price').value);
+    const editIndex = document.getElementById('edit-index').value;
+    const file = document.getElementById('image').files[0];
+
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(){ saveProduct(name, quantity, price, reader.result, editIndex); }
+        reader.readAsDataURL(file);
+    } else {
+        const imgData = editIndex !== '' ? products[editIndex].image : '';
+        saveProduct(name, quantity, price, imgData, editIndex);
+    }
+});
+
+function saveProduct(name, quantity, price, image, editIndex){
+    if(editIndex === '') {
+        products.push({name, quantity, price, image});
+    } else {
+        products[editIndex] = {name, quantity, price, image};
+    }
+    localStorage.setItem('products', JSON.stringify(products));
+    document.getElementById('product-form').reset();
+    document.getElementById('edit-index').value = '';
+    document.getElementById('cancel-edit').style.display = 'none';
+    renderProducts();
+}
+
+/* ===== Edit Product ===== */
+function editProduct(index){
+    const p = products[index];
+    document.getElementById('name').value = p.name;
+    document.getElementById('quantity').value = p.quantity;
+    document.getElementById('price').value = p.price;
+    document.getElementById('edit-index').value = index;
+    document.getElementById('cancel-edit').style.display = 'inline';
+}
+
+/* ===== Cancel Edit ===== */
+document.getElementById('cancel-edit').addEventListener('click', function(){
+    document.getElementById('product-form').reset();
+    document.getElementById('edit-index').value = '';
+    this.style.display = 'none';
+});
+
+/* ===== Delete Product ===== */
+function deleteProduct(index){
+    if(confirm('Delete this product?')){
+        products.splice(index,1);
+        localStorage.setItem('products',JSON.stringify(products));
+        renderProducts();
+    }
+}
+
+/* ===== Initial Render ===== */
+renderProducts();
+</script>
+
+</body>
+</html>
