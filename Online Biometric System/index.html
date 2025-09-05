@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online Biometric System</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body{background:#f4f4f4;}
+.container{max-width:700px; margin:50px auto; padding:20px; background:white; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2);}
+h1,h2{text-align:center; margin-bottom:20px;}
+.msg{margin-top:10px;}
+.fingerprint-icon{font-size:50px; color:#007BFF; cursor:pointer; transition:0.3s;}
+.fingerprint-icon:hover{color:#0056b3;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Online Biometric System</h1>
+
+<!-- Login Form -->
+<h2>Login</h2>
+<div class="mb-3">
+  <input type="text" id="username" class="form-control" placeholder="Username">
+</div>
+<div class="mb-3">
+  <input type="password" id="password" class="form-control" placeholder="Password">
+</div>
+<button class="btn btn-primary w-100" onclick="login()">Login</button>
+<p id="login-msg" class="msg text-center text-danger"></p>
+
+<hr>
+
+<!-- Biometric Scan -->
+<h2>Simulate Biometric Scan</h2>
+<div class="text-center">
+  <span class="fingerprint-icon" onclick="scanBiometric()">&#128376;</span>
+</div>
+<p id="scan-msg" class="msg text-center text-success"></p>
+
+<hr>
+
+<!-- Attendance Table -->
+<h2>Attendance Report</h2>
+<table class="table table-bordered table-striped text-center" id="attendance-table">
+  <thead class="table-primary">
+    <tr>
+      <th>Username</th>
+      <th>Date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Predefined users
+const users = { "user1":"pass1", "user2":"pass2", "admin":"admin123" };
+let loggedUser = "";
+
+// Login function
+function login(){
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const msg = document.getElementById('login-msg');
+
+  if(users[username] && users[username] === password){
+      loggedUser = username;
+      msg.classList.remove('text-danger');
+      msg.classList.add('text-success');
+      msg.innerText = Login successful! Welcome ${username};
+  } else {
+      loggedUser = "";
+      msg.classList.remove('text-success');
+      msg.classList.add('text-danger');
+      msg.innerText = 'Invalid username or password';
+  }
+}
+
+// Biometric scan function
+function scanBiometric(){
+  const msg = document.getElementById('scan-msg');
+  if(!loggedUser){
+      msg.classList.remove('text-success');
+      msg.classList.add('text-danger');
+      msg.innerText = 'Please login first!';
+      return;
+  }
+
+  msg.classList.remove('text-danger');
+  msg.classList.add('text-success');
+  msg.innerText = 'Scanning...';
+
+  setTimeout(()=>{
+      msg.innerText = 'Scan successful! Attendance marked.';
+      addAttendance(loggedUser);
+  }, 1500);
+}
+
+// Add attendance to table
+function addAttendance(username){
+  const table = document.getElementById('attendance-table').getElementsByTagName('tbody')[0];
+  const date = new Date().toLocaleDateString();
+  const row = table.insertRow(-1);
+  row.insertCell(0).innerText = username;
+  row.insertCell(1).innerText = date;
+  row.insertCell(2).innerText = 'Present';
+}
+</script>
+</body>
+</html>
